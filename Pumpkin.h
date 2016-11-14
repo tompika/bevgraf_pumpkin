@@ -37,6 +37,9 @@ class Pumpkin
     std::vector<POINT2D> eye2;
     std::vector<POINT2D> mouth;
     std::vector<POINT2D> szar;
+    std::vector<POINT2D> felsoFog;
+    std::vector<POINT2D> alsoFog;
+    
 
     Matrix N, F, T, XYE;
     Matrix M;
@@ -96,18 +99,30 @@ class Pumpkin
                                -0.155, 0.028,
                                -0.208, 0.32};
 
-        GLdouble mouth[12][2] = {-0.519, -0.226,
-                                 -0.324, -0.524,
-                                 -0.202, -0.514,
-                                 -0.2, -0.4,
-                                 -0.069, -0.395,
-                                 -0.069, -0.518,
-                                 0.474, -0.505,
-                                 0.59, -0.13,
-                                 0.358, -0.151,
+        GLdouble felsoFog[4][2] ={0.358, -0.151,
                                  0.374, -0.269,
                                  0.216, -0.286,
                                  0.196, -0.165};
+
+        GLdouble alsoFog[4][2] = {-0.202, -0.514,
+                                 -0.2, -0.4,
+                                 -0.069, -0.395,
+                                 -0.069, -0.518};
+
+        GLdouble mouth[5][2] = {-0.519, -0.226,
+                                 -0.324, -0.524,
+                                 //-0.202, -0.514,
+                                 //-0.2, -0.4,
+                                 //-0.069, -0.395,
+                                 //-0.069, -0.518,
+                                 0.474, -0.505,
+                                 0.59, -0.13,
+                                 -0.519, -0.226
+                                 //0.358, -0.151,
+                                 //0.374, -0.269,
+                                 //0.216, -0.286,
+                                 //0.196, -0.165
+                                 };
 
         GLdouble szar[3][2] = {0, 0.512,
                                -0.182, 0.681,
@@ -118,6 +133,7 @@ class Pumpkin
             POINT2D tmp = initPoint2D(pump[i][0], pump[i][1]);
             this->pumpkin.push_back(tmp);
         }
+
 
         //eye1, eye2, szar
         for (int i = 0; i < 3; i++)
@@ -133,10 +149,18 @@ class Pumpkin
             this->szar.push_back(szar_);
         }
 
-        for (int i = 0; i < 12; i++)
+        for (int i = 0; i < 5; i++)
         {
             POINT2D mouth_ = initPoint2D(mouth[i][0], mouth[i][1]);
             this->mouth.push_back(mouth_);
+        }
+
+        for(int i=0; i<4; i++){
+            POINT2D felsoFog_ = initPoint2D(felsoFog[i][0], felsoFog[i][1]);
+            POINT2D alsoFog_ = initPoint2D(alsoFog[i][0], alsoFog[i][1]);
+            
+            this->felsoFog.push_back(felsoFog_);
+            this->alsoFog.push_back(alsoFog_);
         }
 
         this->N = N;
@@ -154,60 +178,6 @@ class Pumpkin
         transformation(M);
     }
 
-    /* POINT2D skalaz(GLdouble x, GLdouble y, GLdouble n)
-    {
-
-        float M[3][3] = {n, 0, 0,
-                         0, n, 0,
-                         0, 0, 1};
-
-        float temp[3] = {x, y, 1};
-
-        float sum = 0;
-
-        for (int i = 0; i < 3; i++)
-            sum += M[0][i] * temp[i];
-
-        x = sum;
-
-        x = x / temp[2];
-
-        sum = 0;
-
-        for (int i = 0; i < 3; i++)
-            sum += M[1][i] * temp[i];
-
-        y = sum;
-        y = y / temp[2];
-
-        return initPoint2D(x, y);
-    }
-
-    POINT2D eltol(GLdouble x, GLdouble y, GLdouble u, GLdouble v)
-    {
-
-        float M[3][3] = {1, 0, u,
-                         0, 1, v,
-                         0, 0, 1};
-
-        float temp[3] = {x, y, 1};
-
-        float sum = 0;
-
-        for (int i = 0; i < 3; i++)
-            sum += M[0][i] * temp[i];
-
-        x = sum;
-        sum = 0;
-
-        for (int i = 0; i < 3; i++)
-            sum += M[1][i] * temp[i];
-
-        y = sum;
-
-        return initPoint2D(x, y);
-    }
-*/
 
     void calculateM()
     {
@@ -344,6 +314,56 @@ class Pumpkin
             mouth[i].x = x;
             mouth[i].y = y;
         }
+
+        for (int i = 0; i < alsoFog.size(); i++)
+        {
+
+            double x = alsoFog[i].x;
+            double y = alsoFog[i].y;
+
+            double temp[3] = {x, y, 1};
+            double sum = 0;
+
+            for (int i = 0; i < 3; i++)
+                sum += _M.data[0][i] * temp[i];
+
+            x = sum;
+            sum = 0;
+
+            for (int i = 0; i < 3; i++)
+                sum += _M.data[1][i] * temp[i];
+
+            y = sum;
+
+            alsoFog[i].x = x;
+            alsoFog[i].y = y;
+        }
+
+        for (int i = 0; i < felsoFog.size(); i++)
+        {
+
+            double x = felsoFog[i].x;
+            double y = felsoFog[i].y;
+
+            double temp[3] = {x, y, 1};
+            double sum = 0;
+
+            for (int i = 0; i < 3; i++)
+                sum += _M.data[0][i] * temp[i];
+
+            x = sum;
+            sum = 0;
+
+            for (int i = 0; i < 3; i++)
+                sum += _M.data[1][i] * temp[i];
+
+            y = sum;
+
+            felsoFog[i].x = x;
+            felsoFog[i].y = y;
+        }
+
+
     }
 
     void draw()
@@ -361,6 +381,8 @@ class Pumpkin
             glVertex2d(pumpkin[i].x, pumpkin[i].y);
         }
         glEnd();
+
+
 
         glColor3f(0.0, 0.0, 0.0);
         glBegin(GL_POLYGON);
@@ -400,6 +422,26 @@ class Pumpkin
         }
         glEnd();
 
+        glBegin(GL_POLYGON);
+
+        for (int i = 0; i < alsoFog.size(); i++)
+        {
+
+            glVertex2d(alsoFog[i].x, alsoFog[i].y);
+        }
+        glEnd();
+
+
+        glBegin(GL_POLYGON);
+
+        for (int i = 0; i < felsoFog.size(); i++)
+        {
+
+            glVertex2d(felsoFog[i].x, felsoFog[i].y);
+        }
+        glEnd();
+
+        
         glColor3f(0.000, 0.000, 0.000);
     }
 };

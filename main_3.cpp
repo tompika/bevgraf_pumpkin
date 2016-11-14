@@ -7,6 +7,8 @@
 
 GLsizei winWidth = 800, winHeight = 600;
 
+std::vector<Pumpkin> all;
+
 void init()
 {
     glClearColor(1.0, 1.0, 1.0, 0.0);
@@ -15,29 +17,44 @@ void init()
     glShadeModel(GL_FLAT);
 }
 
+double rand(double fMin, double fMax)
+{
+    double f = (double)rand() / RAND_MAX;
+    return fMin + f * (fMax - fMin);
+};
+
 void display()
 {
     glClear(GL_COLOR_BUFFER_BIT);
     glColor3f(0.0, 0.0, 1.0);
 
+    for(int i = 0; i< all.size(); i++)
+        all[i].draw();
+
+    glutSwapBuffers();
+}
+
+void update(int n)
+{
+
     //skálázás
-    std::vector<std::vector<double>> N{{50, 0, 0},
-                                       {0, 50, 0},
+    double NN = (int)rand(10,100);
+    std::vector<std::vector<double>> N{{NN, 0, 0},
+                                       {0, NN, 0},
                                        {0, 0, 1}};
 
     //forgatás
-    double alfa = 45 * (pi / 180);
+    double szog = rand(90,-90);
+    double alfa = szog * (pi / 180);
     std::vector<std::vector<double>> F{{cos(alfa), -(sin(alfa)), 0},
                                        {sin(alfa), cos(alfa), 0},
                                        {0, 0, 1}};
     //eltolás
-    std::vector<std::vector<double>> T{{1, 0, 200},
-                                       {0, 1, 200},
+    double TT = rand(50,700);
+    double TT2 = rand(50,500);
+    std::vector<std::vector<double>> T{{1, 0, TT},
+                                       {0, 1, TT2},
                                        {0, 0, 1}};
-
-    std::vector<std::vector<double>> T2{{1, 0, 400},
-                                        {0, 1, 400},
-                                        {0, 0, 1}};
 
     std::vector<std::vector<double>> X{{1, 0, 0},
                                        {0, -1, 0},
@@ -51,34 +68,38 @@ void display()
                                        {0, 1, 0},
                                        {0, 0, 1}};
 
-    Matrix M_N = Matrix(3, 3, N);
-    Matrix M_F = Matrix(3, 3, F);
-    Matrix M_T = Matrix(3, 3, T);
-    Matrix M_XYE = Matrix(3, 3, Y);
+    Matrix N_ = Matrix(3, 3, N);
+    Matrix F_ = Matrix(3, 3, F);
+    Matrix T_ = Matrix(3, 3, T);
 
-    Matrix M_T2 = Matrix(3, 3, T2);
+    Matrix XYE_ ;
 
-    /*
-    M_N.display();
-    M_F.display();
-    M_T.display();
-    M_.display();
-    */
-    Pumpkin pmp = Pumpkin(M_N, M_F, M_T, M_XYE);
-    Pumpkin pmp2 = Pumpkin(M_N, M_F, M_T2, M_XYE);
+    int num = rand()%3+1;
 
-    pmp.draw();
-    pmp2.draw();
+    if(num == 1){
+        XYE_ = Matrix(3, 3, E);
+    }
+    else if(num == 2){
+        XYE_ = Matrix(3, 3, X);
+    }
+    else
+    {
+        XYE_ = Matrix(3, 3, Y);
+    }
 
-    glutSwapBuffers();
-}
+    
 
-void update(int n)
-{
+    all.push_back(Pumpkin(N_, F_, T_, XYE_));
+    std::cout << all.size() << std::endl;
+
+
+
+
+
 
     glutPostRedisplay();
 
-    glutTimerFunc(5, update, 0);
+    glutTimerFunc(500, update, 0);
 }
 
 void keyboard(unsigned char key, int x, int y)
@@ -86,7 +107,8 @@ void keyboard(unsigned char key, int x, int y)
     switch (key)
     {
     case 27:
-        exit(0);
+        all.clear();
+        std::cout << ">> RESET <<" << std::endl;
         break;
     }
 }
@@ -100,8 +122,8 @@ int main(int argc, char **argv)
     glutCreateWindow("Pumpkin - Szilvacsku Peter");
     init();
     glutDisplayFunc(display);
-    // glutKeyboardFunc( keyboard );
-    //glutTimerFunc( 5, update, 0 );
+    glutKeyboardFunc( keyboard );
+    glutTimerFunc( 500, update, 0 );
     glutMainLoop();
     return 0;
 }
